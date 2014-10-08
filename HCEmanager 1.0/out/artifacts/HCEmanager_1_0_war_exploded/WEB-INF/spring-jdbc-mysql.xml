@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+       default-lazy-init="true">
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+    </bean>
+
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>/WEB-INF/configuration.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--bean de configuración del pool de conexiones a la base de datos-->
+    <bean id="connectionPooledDataSource" class="org.apache.commons.dbcp.cpdsadapter.DriverAdapterCPDS">
+        <property name="driver" value="com.mysql.jdbc.Driver"/>
+        <property name="url"
+                  value="jdbc:mysql://${database.host}:${database.port}/${database.name}"/>
+        <property name="user" value="${database.user}"/>
+        <property name="password" value="${database.password}"/>
+    </bean>
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.datasources.SharedPoolDataSource" destroy-method="close">
+        <property name="connectionPoolDataSource" ref="connectionPooledDataSource"/>
+        <property name="maxActive" value="15"/>
+        <property name="maxWait" value="3000"/>
+        <property name="maxIdle" value="7"/>
+        <property name="testOnBorrow" value="true"/>
+        <property name="validationQuery" value="SELECT 1"/>
+    </bean>
+
+    <bean id="dao" class="org.springframework.jdbc.core.support.JdbcDaoSupport" abstract="true">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="incrementer"
+          class="org.springframework.jdbc.support.incrementer.PostgreSQLSequenceMaxValueIncrementer" abstract="true">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+
+
+    <!--Data base beans-->
+
+    <bean id="personaDao" class="com.hcemanager.sandbox.PersonDAOImpl" parent="dao"/>
+
+    <!--Acts beans-->
+    <bean id="accountDao" class="com.hcemanager.dao.acts.implementations.AccountDAOImpl" parent="dao" />
+    <bean id="actDao" class="com.hcemanager.dao.acts.implementations.ActDAOImpl" parent="dao"/>
+    <bean id="observationDao" class="com.hcemanager.dao.acts.implementations.ObservationDAOImpl" parent="dao"/>
+    <bean id="supplyDao" class="com.hcemanager.dao.acts.implementations.SupplyDAOImpl" parent="dao"/>
+
+    <!--Roles beans-->
+    <bean id="roleDao" class="com.hcemanager.dao.roles.implementations.RoleDAOImpl" parent="dao"/>
+    <bean id="accessDao" class="com.hcemanager.dao.roles.implementations.AccessDAOImpl" parent="dao"/>
+    <bean id="employeeDao" class="com.hcemanager.dao.roles.implementations.EmployeeDAOImpl" parent="dao"/>
+    <bean id="licensedEntityDao" class="com.hcemanager.dao.roles.implementations.LicensedEntityDAOImpl" parent="dao"/>
+    <bean id="patientDao" class="com.hcemanager.dao.roles.implementations.PatientDAOImpl" parent="dao"/>
+
+    <!-- Entities beans -->
+    <bean id="entityDao" class="com.hcemanager.dao.entities.implementations.EntityDAOImpl" parent="dao"/>
+    <bean id="livingSubjectDao" class="com.hcemanager.dao.entities.implementations.LivingSubjectDAOImpl" parent="dao"/>
+    <bean id="materialDao" class="com.hcemanager.dao.entities.implementations.MaterialDAOImpl" parent="dao"/>
+    <bean id="manufacturedMaterialDao" class="com.hcemanager.dao.entities.implementations.ManufacturedMaterialDAOImpl" parent="dao"/>
+    <bean id="personDao" class="com.hcemanager.dao.entities.implementations.PersonDAOImpl" parent="dao"/>
+    <bean id="nonPersonLivingSubjectDao" class="com.hcemanager.dao.entities.implementations.NonPersonLivingSubjectDAOImpl" parent="dao"/>
+    <bean id="organizationDao" class="com.hcemanager.dao.entities.implementations.OrganizationDAOImpl" parent="dao"/>
+    <bean id="placeDao" class="com.hcemanager.dao.entities.implementations.PlaceDAOImpl" parent="dao"/>
+    <bean id="deviceDao" class="com.hcemanager.dao.entities.implementations.DeviceDAOImpl" parent="dao"/>
+    <bean id="containerDao" class="com.hcemanager.dao.entities.implementations.ContainerDAOImpl" parent="dao"/>
+
+    <bean id="userDao" class="com.hcemanager.dao.users.implementations.UserDAOImpl" parent="dao"/>
+
+    <!-- Code bean-->
+    <bean id="codeDao" class="com.hcemanager.dao.codes.CodeDAOImpl" parent="dao"/>
+    <!-- MedicalAppointment bean -->
+    <bean id="medicalAppointmentDao" class="com.hcemanager.dao.medicalAppointments.implementations.MedicalAppointmentDAOImp" parent="dao"/>
+    <bean id="dicomImageDao" class="com.hcemanager.dao.medicalAppointments.implementations.DicomImageDAOImpl" parent="dao"/>
+    <!-- Connectors bean -->
+    <bean id="participationDao" class="com.hcemanager.dao.connectors.implementation.ParticipationDAOImpl" parent="dao"/>
+    <bean id="roleHasEntityDao" class="com.hcemanager.dao.connectors.implementation.RoleHasEntityDAOImpl" parent="dao"/>
+
+
+</beans>
+
